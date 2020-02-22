@@ -1,0 +1,97 @@
+@function color-yiq($color, $dark: $yiq-text-dark, $light: $yiq-text-light) {
+  $r: red($color);
+  $g: green($color);
+  $b: blue($color);
+
+  $yiq: (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
+
+  @if ($yiq >= $yiq-contrasted-threshold) {
+    @return $dark;
+  } @else {
+    @return $light;
+  }
+}
+//گردینت برای بک گراند که ما از این مورد برای قسمت رنگ دهی به دکمه ها استفاده می کنیم یعنی میکسین 
+@mixin gradient-bg($color) {
+    @if $enable-gradients {
+      background: $color linear-gradient(180deg, mix($body-bg, $color, 15%), $color) repeat-x;
+    } @else {
+      background-color: $color;
+    }
+  }
+  
+// این میکسین کار سایز بندی دکمه ها و تناسب مقادیرآن ها را با ساتفاده از متغیر های ورودی انجام می دهد
+@mixin button-size($padding-y, $padding-x, $font-size, $line-height, $border-radius) {
+    padding: $padding-y $padding-x;
+    font-size :$font-size;
+    line-height: $line-height;
+    // Manually declare to provide an override to the browser default
+     border-radius :$border-radius;
+  }
+
+  //کاربرد میکسین زیر برای رنگ دهی به دکمه ها بصورت داینامیک می باشد
+  @mixin button-variant($background, $border, $hover-background: darken($background, 7.5%), $hover-border: darken($border, 10%), $active-background: darken($background, 10%), $active-border: darken($border, 12.5%)) {
+    color: color-yiq($background);
+    @include gradient-bg($background);
+    border-color: $border;
+    &:hover{
+      color: color-yiq($hover-background);
+      @include gradient-bg($hover-background);
+      border-color: $hover-border;
+    }
+  
+    &:focus,
+    &.focus {
+      color: color-yiq($hover-background);
+      @include gradient-bg($hover-background);
+      border-color: $hover-border;
+      // Avoid using mixin so we can pass custom focus shadow properly
+      @if $enable-shadows {
+        box-shadow: $btn-box-shadow, 0 0 0 $btn-focus-width rgba(mix(color-yiq($background), $border, 15%), .5);
+      } @else {
+        box-shadow: 0 0 0 $btn-focus-width rgba(mix(color-yiq($background), $border, 15%), .5);
+      }
+    }
+    }
+  //کاربرد میکسین زیر برای رنگ دهی به دکمه های تو خالی و دارای بوردر بصورت داینامیک می باشد
+
+    @mixin button-outline-variant($color, $color-hover: color-yiq($color), $active-background: $color, $active-border: $color) {
+        color: $color;
+        border-color: $color;
+        background-color: transparent;
+      
+         &:hover {
+          color: $color-hover;
+          background-color: $active-background;
+          border-color: $active-border;
+        }
+      
+        &:focus,
+        &.focus {
+          box-shadow: 0 0 0 $btn-focus-width rgba($color, .5);
+        }
+      
+        &.disabled,
+        &:disabled {
+          color: $color;
+          background-color: transparent;
+        }
+      
+        &:not(:disabled):not(.disabled):active,
+        &:not(:disabled):not(.disabled).active,
+        .show > &.dropdown-toggle {
+          color: $active-background;
+          background-color: $active-background;
+          border-color: $active-border;
+      
+          &:focus {
+            // Avoid using mixin so we can pass custom focus shadow properly
+            @if $enable-shadows and $btn-active-box-shadow != none {
+              box-shadow: $btn-active-box-shadow, 0 0 0 $btn-focus-width rgba($color, .5);
+            } @else {
+              box-shadow: 0 0 0 $btn-focus-width rgba($color, .5);
+            }
+          }
+        }
+      }
+
